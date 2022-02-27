@@ -5,46 +5,49 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
- 	
 
-/**
- * Hello world!
- *
- */
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 public class App 
 {
 	public static void main(String[] args) {
-		LocalDate todayDate = LocalDate.now();
-		int currentDay = todayDate.getDayOfMonth();
-		int currentMonth = todayDate.getMonthValue();
+		CustomDate date = new CustomDate();
+		date.setDay(27);
+		date.setMonth(02);
+		int currentDay = date.getDay();
+		int currentMonth = date.getMonth();
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
-		//For just printing
-		//client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenAccept(System.out::println).join();
-		//For converting to JSON
-		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();
-		
+		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
 	}
 	
 	public static String parse(String responseBody) {
 		JSONObject events = new JSONObject(responseBody);
-		//System.out.println(events);
 		JSONArray selected = events.getJSONArray("selected");
-		//System.out.println(selected);
-
+		ArrayList<Selected> selected_array = new ArrayList<Selected>();
 		for(int i = 0; i < selected.length(); i++) {
 			 JSONObject each_selected = selected.getJSONObject(i);
-			 
-			 JSONArray pages = each_selected.getJSONArray("pages");
-			 System.out.println(pages);
-
-			 //int id = event.getInt("id");
-			 
-			// int userID = event.getInt("userId");
-			// String title = event.getString("text");
-			// System.out.println(title);
+			 String jSONString = each_selected.toString();
+			 GsonBuilder builder = new GsonBuilder();
+			 Gson gson = builder.create();
+			 Selected Conv_obj = gson.fromJson(jSONString, Selected.class);
+			 selected_array.add(i,Conv_obj);
+		}
+		// Checking
+		for(int i=0; i<selected_array.size();i++) {
+			System.out.println(selected_array.get(i).text); //title
+			System.out.println(selected_array.get(i).year); //year
+			for(int j=0; j<selected_array.get(i).pages.size();j++) {
+				System.out.println(selected_array.get(i).pages.get(j).extract);	//extract of each page
+				System.out.println(selected_array.get(i).pages.get(j).content_urls.desktop.page); // url
+				System.out.println(selected_array.get(i).pages.get(j).thumbnail.source); //image
+			}
+			break;
 		}
 		return null;
 	}
