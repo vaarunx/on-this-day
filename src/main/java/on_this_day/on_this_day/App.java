@@ -71,17 +71,17 @@ public class App
 			 history.deaths_array.add(i,Conv_obj);
 		}
 		// Checking
-		/*
+		
 		for(int i=0; i<history.events_array.size();i++) {
 			System.out.println(history.events_array.get(i).text); //title
 			System.out.println(history.events_array.get(i).year); //year
 			for(int j=0; j<history.events_array.get(i).pages.size();j++) {
 				System.out.println(history.events_array.get(i).pages.get(j).extract);	//extract of each page
 				System.out.println(history.events_array.get(i).pages.get(j).content_urls.desktop.page); // url
-				System.out.println(history.events_array.get(i).pages.get(j).originalimage.source); //image
+				//System.out.println(history.events_array.get(i).pages.get(j).originalimage.source); //image
 			}
 			break;
-		}*/
+		}
 		return null;
 	}
 }
