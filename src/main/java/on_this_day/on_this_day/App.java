@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.sql.*;
 
 public class App  
 {
@@ -81,6 +82,25 @@ public class App
 				//System.out.println(history.events_array.get(i).pages.get(j).originalimage.source); //image
 			}
 			break;
+		}
+		
+		
+		long unixTime = date.getTime();
+
+		try{
+		   Class.forName("org.sqlite.JDBC");
+		   String url= "jdbc:sqlite:onThisDay.db";
+		   Connection conn= null;
+		   conn=DriverManager.getConnection(url);
+		   String sql="INSERT INTO history_information(date,json_info) VALUES(?,?)";
+		   PreparedStatement ps=conn.prepareStatement(sql);
+		   ps.setLong(1, unixTime);
+		   ps.setString(2, s2);
+		   ps.executeUpdate();
+		   conn.close();
+		}
+		catch(Exception ex){
+		   System.out.print(ex.getMessage());
 		}
 		return null;
 	}
