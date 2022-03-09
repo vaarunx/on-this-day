@@ -61,7 +61,10 @@ class TodaysHistoryInfo {
 		   
 	}
 interface TodaysHistoryRetriever {
-	   public TodaysHistoryInfo[] get(CustomDate date);
+	   public void get(CustomDate date);
+	   
 	}
 
 public class apiClass { }
+
+//create a new class (file) which implements this interface which should contain the App class (API call getting)

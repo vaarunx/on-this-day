@@ -9,20 +9,20 @@ import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class App 
+public class App  
 {
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
-	public static void main(String[] args) {
-		CustomDate date = new CustomDate();
-		date.setDay(27);
-		date.setMonth(02);
-		int currentDay = date.getDay();
-		int currentMonth = date.getMonth();
-		HttpClient client = HttpClient.newHttpClient();
-		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
-		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
-	}
-	
+//	public static void main(String[] args) {
+//		CustomDate date = new CustomDate();
+//		date.setDay(2);
+//		date.setMonth(03);
+//		int currentDay = date.getDay();
+//		int currentMonth = date.getMonth();
+//		HttpClient client = HttpClient.newHttpClient();
+//		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
+//		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
+//	}
+//	
 	public static String parse(String responseBody) {
 		JSONObject events = new JSONObject(responseBody);
 		JSONArray selected = events.getJSONArray("selected");
