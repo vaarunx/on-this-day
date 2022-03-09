@@ -1,14 +1,74 @@
 package on_this_day.on_this_day;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+//import java.net.URI;
+//import java.net.http.HttpClient;
+//import java.net.http.HttpRequest;
+//import java.net.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.sql.*;
+import java.util.Date;
+import java.nio.charset.StandardCharsets;
+import java.security.spec.KeySpec;
+import java.util.Base64;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+
+class AesEnc {
+	private static final String SECRET_KEY = "4B2E8521A6945CD0BE701C7697AB268DC74AE1A581E89C4D21EBD6BD3D575813";
+    private static final String SALT = "C056C8725AE0F2A1";
+    private static final byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    
+    public String encrypt(String strToEncrypt){
+        try {
+            IvParameterSpec ivspec = new IvParameterSpec(iv);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT.getBytes(), 65536, 256);
+            SecretKey tmp = factory.generateSecret(spec);
+            SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey,ivspec);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
+        }
+        catch (Exception e) {
+            System.out.println("Error while encrypting: "+ e.toString());
+        }
+        return null;
+    }
+    
+    public String decrypt(String strToDecrypt){
+	try {
+            IvParameterSpec ivspec = new IvParameterSpec(iv);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT.getBytes(), 65536, 256);
+            SecretKey tmp = factory.generateSecret(spec);
+            SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
+        }
+        catch (Exception e) {
+            System.out.println("Error while decrypting: "+ e.toString());
+        }
+        return null;
+    }
+
+//    public static void main(String[] args){
+//        AesEnc aes = new AesEnc();
+//        String originalString = "When life closes a door you're stuck :)";
+//        String encryptedString = aes.encrypt(originalString);
+//        String decryptedString = aes.decrypt(encryptedString);
+//        System.out.println(originalString);
+//        System.out.println(encryptedString);
+//        System.out.println(decryptedString);
+//    }
+}
 
 public class App  
 {
@@ -72,7 +132,7 @@ public class App
 			 history.deaths_array.add(i,Conv_obj);
 		}
 		// Checking
-		
+/*		
 		for(int i=0; i<history.events_array.size();i++) {
 			System.out.println(history.events_array.get(i).text); //title
 			System.out.println(history.events_array.get(i).year); //year
@@ -83,9 +143,9 @@ public class App
 			}
 			break;
 		}
+		*/
 		
-		
-		long unixTime = date.getTime();
+		long unixTime = new Date().getTime();
 
 		try{
 		   Class.forName("org.sqlite.JDBC");
@@ -95,7 +155,7 @@ public class App
 		   String sql="INSERT INTO history_information(date,json_info) VALUES(?,?)";
 		   PreparedStatement ps=conn.prepareStatement(sql);
 		   ps.setLong(1, unixTime);
-		   ps.setString(2, s2);
+		   ps.setString(2, new AesEnc().encrypt(events.toString()));
 		   ps.executeUpdate();
 		   conn.close();
 		}

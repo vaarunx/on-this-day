@@ -8,7 +8,8 @@ import java.net.http.HttpResponse;
 public abstract class implementingClass implements TodaysHistoryRetriever {
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
 	
-	public void get(CustomDate date) {
+	public static void main(String[] args) {
+		CustomDate date = new CustomDate();
 		date.setDay(2);
 		date.setMonth(03);
 		int currentDay = date.getDay();
