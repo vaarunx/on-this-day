@@ -10,6 +10,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.sql.*;
 import java.util.Date;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
 import java.util.Base64;
@@ -73,17 +77,17 @@ class AesEnc {
 public class App  
 {
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
-//	public static void main(String[] args) {
-//		CustomDate date = new CustomDate();
-//		date.setDay(2);
-//		date.setMonth(03);
-//		int currentDay = date.getDay();
-//		int currentMonth = date.getMonth();
-//		HttpClient client = HttpClient.newHttpClient();
-//		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
-//		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
-//	}
-//	
+	public static void main(String[] args) {
+		CustomDate date = new CustomDate();
+		date.setDay(2);
+		date.setMonth(03);
+		int currentDay = date.getDay();
+		int currentMonth = date.getMonth();
+		HttpClient client = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
+		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
+	}
+	
 	public static String parse(String responseBody) {
 		JSONObject events = new JSONObject(responseBody);
 		JSONArray selected = events.getJSONArray("selected");
@@ -152,12 +156,30 @@ public class App
 		   String url= "jdbc:sqlite:onThisDay.db";
 		   Connection conn= null;
 		   conn=DriverManager.getConnection(url);
-		   String sql="INSERT INTO history_information(date,json_info) VALUES(?,?)";
-		   PreparedStatement ps=conn.prepareStatement(sql);
-		   ps.setLong(1, unixTime);
-		   ps.setString(2, new AesEnc().encrypt(events.toString()));
-		   ps.executeUpdate();
-		   conn.close();
+		   DatabaseMetaData dbm = conn.getMetaData();
+	        // check if "onThisDay" table is there
+	        ResultSet tables = dbm.getTables(null, null, "history_information", null);
+	       if (tables.next()) {
+	       // Table exists
+		       String sql="INSERT INTO history_information(date,json_info) VALUES(?,?)";
+			   PreparedStatement ps=conn.prepareStatement(sql);
+			   ps.setLong(1, unixTime);
+			   ps.setString(2, new AesEnc().encrypt(events.toString()));
+			   ps.executeUpdate();
+			   conn.close();
+		}
+	       else {
+	         // Table does not exist
+		         String create="CREATE TABLE history_information(date NUMERIC,json_info TEXT)";
+		         String sql="INSERT INTO history_information(date,json_info) VALUES(?,?)";
+		         PreparedStatement ps1=conn.prepareStatement(create);
+		         ps1.executeUpdate();
+		         PreparedStatement ps=conn.prepareStatement(sql);
+		         ps.setLong(1, unixTime);
+				 ps.setString(2, new AesEnc().encrypt(events.toString()));
+		         ps.executeUpdate();
+		         conn.close();
+	        }
 		}
 		catch(Exception ex){
 		   System.out.print(ex.getMessage());
@@ -165,3 +187,4 @@ public class App
 		return null;
 	}
 }
+	

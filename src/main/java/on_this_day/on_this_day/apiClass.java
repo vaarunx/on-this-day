@@ -61,7 +61,8 @@ class TodaysHistoryInfo {
 		   
 	}
 interface TodaysHistoryRetriever {
-	   public void get(CustomDate date);
+	   public TodaysHistoryInfo get(CustomDate date);
+	   
 	   
 	}
 
