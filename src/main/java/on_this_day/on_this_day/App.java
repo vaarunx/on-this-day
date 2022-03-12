@@ -1,14 +1,11 @@
 package on_this_day.on_this_day;
 
-//import java.net.URI;
-//import java.net.http.HttpClient;
-//import java.net.http.HttpRequest;
-//import java.net.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.net.URI;
@@ -27,11 +24,14 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+
+//Encryption Class
 class AesEnc {
 	private static final String SECRET_KEY = "4B2E8521A6945CD0BE701C7697AB268DC74AE1A581E89C4D21EBD6BD3D575813";
     private static final String SALT = "C056C8725AE0F2A1";
     private static final byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     
+    //Encrypting
     public String encrypt(String strToEncrypt){
         try {
             IvParameterSpec ivspec = new IvParameterSpec(iv);
@@ -66,32 +66,15 @@ class AesEnc {
         return null;
     }
 
-//    public static void main(String[] args){
-//        AesEnc aes = new AesEnc();
-//        String originalString = "When life closes a door you're stuck :)";
-//        String encryptedString = aes.encrypt(originalString);
-//        String decryptedString = aes.decrypt(encryptedString);
-//        System.out.println(originalString);
-//        System.out.println(encryptedString);
-//        System.out.println(decryptedString);
-//    }
 }
 
+//Class where we parse the API Response into the POJO class
 public class App  
 {
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
-	CustomDate date = new CustomDate();
-//	public static void main(String[] args) {
-//		CustomDate date = new CustomDate();
-//		date.setDay(2);
-//		date.setMonth(03);
-//		int currentDay = date.getDay();
-//		int currentMonth = date.getMonth();
-//		HttpClient client = HttpClient.newHttpClient();
-//		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
-//		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
-//	}
+//	CustomDate date = new CustomDate();
 	
+	//"Selected" is 
 	public static String parse(String responseBody) {
 		JSONObject events = new JSONObject(responseBody);
 		JSONArray selected = events.getJSONArray("selected");
@@ -130,6 +113,7 @@ public class App
 			 Birth Conv_obj = gson.fromJson(jSONString, Birth.class);
 			 history.births_array.add(i,Conv_obj);
 		}
+		
 		JSONArray deaths = events.getJSONArray("deaths");
 		for(int i = 0; i < deaths.length(); i++) {
 			 JSONObject each_death = deaths.getJSONObject(i);
@@ -155,12 +139,20 @@ public class App
 		
 		//long unixTime = new Date().getTime();
 
-		Calendar myCalendar = new GregorianCalendar(date.getYear(),date.getMonth(),date.getDay());
-		Date tempDate = myCalendar.getTime();
-		long unixTime = tempDate.getTime();
-		System.out.println("Long: " + unixTime);
-		System.out.println(tempDate.getTime());
-
+		String pattern = "yyyy-MM-dd";
+		String datestr = "";
+		datestr+=date.getYear();
+		datestr+="-";
+		datestr+=date.getMonth();
+		datestr+="-";
+		datestr+=date.getDate();
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		Date date = sdf.parse(datestr);
+		long epoch = date.getTime();
+		System.out.println(epoch);
+		
+		//Database creation
+		
 		try{
 		   Class.forName("org.sqlite.JDBC");
 		   String url= "jdbc:sqlite:onThisDay.db";
@@ -173,7 +165,7 @@ public class App
 	       // Table exists
 		       String sql="INSERT INTO history_information(date,json_info) VALUES(?,?)";
 			   PreparedStatement ps=conn.prepareStatement(sql);
-			   ps.setLong(1, unixTime);
+			   ps.setLong(1, epoch);
 			   ps.setString(2, new AesEnc().encrypt(events.toString()));
 			   ps.executeUpdate();
 			   conn.close();
@@ -185,7 +177,7 @@ public class App
 		         PreparedStatement ps1=conn.prepareStatement(create);
 		         ps1.executeUpdate();
 		         PreparedStatement ps=conn.prepareStatement(sql);
-		         ps.setLong(1, unixTime);
+		         ps.setLong(1, epoch);
 				 ps.setString(2, new AesEnc().encrypt(events.toString()));
 		         ps.executeUpdate();
 		         conn.close();

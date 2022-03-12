@@ -2,6 +2,8 @@ package on_this_day.on_this_day;
 
 import java.util.*;
 
+//All these classes are created with the same schema as the API Response 
+
 class Namespace{
     public int id;
     public String text;
@@ -192,6 +194,7 @@ class Coordinates{
     }    
 }
 
+
 class Page{
     public String type;
     public String title;
@@ -261,6 +264,7 @@ class Page{
     public void setLocation(Coordinates obj) { this.coordinates = new Coordinates(obj); }
 }
 
+//Main Class
 class Selected{
     public String text;
     public ArrayList<Page> pages;
