@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.sql.*;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,6 +18,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
 import java.util.Base64;
+import java.util.Calendar;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -77,16 +80,17 @@ class AesEnc {
 public class App  
 {
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
-	public static void main(String[] args) {
-		CustomDate date = new CustomDate();
-		date.setDay(2);
-		date.setMonth(03);
-		int currentDay = date.getDay();
-		int currentMonth = date.getMonth();
-		HttpClient client = HttpClient.newHttpClient();
-		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
-		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
-	}
+	CustomDate date = new CustomDate();
+//	public static void main(String[] args) {
+//		CustomDate date = new CustomDate();
+//		date.setDay(2);
+//		date.setMonth(03);
+//		int currentDay = date.getDay();
+//		int currentMonth = date.getMonth();
+//		HttpClient client = HttpClient.newHttpClient();
+//		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
+//		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
+//	}
 	
 	public static String parse(String responseBody) {
 		JSONObject events = new JSONObject(responseBody);
@@ -149,7 +153,13 @@ public class App
 		}
 		*/
 		
-		long unixTime = new Date().getTime();
+		//long unixTime = new Date().getTime();
+
+		Calendar myCalendar = new GregorianCalendar(date.getYear(),date.getMonth(),date.getDay());
+		Date tempDate = myCalendar.getTime();
+		long unixTime = tempDate.getTime();
+		System.out.println("Long: " + unixTime);
+		System.out.println(tempDate.getTime());
 
 		try{
 		   Class.forName("org.sqlite.JDBC");
