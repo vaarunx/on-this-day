@@ -5,18 +5,12 @@ import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.sql.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
 import java.util.Base64;
-import java.util.Calendar;
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -73,9 +67,10 @@ public class App
 {
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
 //	CustomDate date = new CustomDate();
+	public static CustomDate given_date = new CustomDate();
 	
 	//"Selected" is 
-	public static String parse(String responseBody) {
+	public static String parse(String responseBody) throws ParseException {
 		JSONObject events = new JSONObject(responseBody);
 		JSONArray selected = events.getJSONArray("selected");
 		for(int i = 0; i < selected.length(); i++) {
@@ -123,32 +118,18 @@ public class App
 			 Death Conv_obj = gson.fromJson(jSONString, Death.class);
 			 history.deaths_array.add(i,Conv_obj);
 		}
-		// Checking
-/*		
-		for(int i=0; i<history.events_array.size();i++) {
-			System.out.println(history.events_array.get(i).text); //title
-			System.out.println(history.events_array.get(i).year); //year
-			for(int j=0; j<history.events_array.get(i).pages.size();j++) {
-				System.out.println(history.events_array.get(i).pages.get(j).extract);	//extract of each page
-				System.out.println(history.events_array.get(i).pages.get(j).content_urls.desktop.page); // url
-				//System.out.println(history.events_array.get(i).pages.get(j).originalimage.source); //image
-			}
-			break;
-		}
-		*/
-		
-		//long unixTime = new Date().getTime();
 
 		String pattern = "yyyy-MM-dd";
 		String datestr = "";
-		datestr+=date.getYear();
+		datestr+=given_date.getYear();
 		datestr+="-";
-		datestr+=date.getMonth();
+		datestr+=given_date.getMonth();
 		datestr+="-";
-		datestr+=date.getDate();
+		datestr+=given_date.getDay();
 		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 		Date date = sdf.parse(datestr);
 		long epoch = date.getTime();
+		System.out.println(datestr);
 		System.out.println(epoch);
 		
 		//Database creation

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.ParseException;
 
 interface TodaysHistoryRetriever {
 	   
@@ -11,33 +12,39 @@ interface TodaysHistoryRetriever {
 	      
 	}
 
-public class implementingClass implements TodaysHistoryRetriever {
-	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
+public class implementingClass extends App implements TodaysHistoryRetriever {
 	
-//	public static void main(String[] args) {
-//		CustomDate date = new CustomDate();
-//		date.setDay(2);
-//		date.setMonth(03);
-//		int currentDay = date.getDay();
-//		int currentMonth = date.getMonth();
-//		HttpClient client = HttpClient.newHttpClient();
-//		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
-//		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
-//	}
+	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
+
+	public static void main(String[] args) {
+		
+		implementingClass m = new implementingClass();
+		CustomDate d = new CustomDate();
+		d.setDay(12);
+		d.setMonth(3);
+		d.setYear(2022);
+		history = m.get(d);
+		System.out.println(history);
+	}
 
 	//Running the API Asynchronously
 	@Override
 	public TodaysHistoryInfo get(CustomDate date) {
 		TodaysHistoryInfo history = new TodaysHistoryInfo();
-
-//		CustomDate date = new CustomDate();
-//		date.setDay(2);
-//		date.setMonth(03);
+		given_date = date;
 		int currentDay = date.getDay();
 		int currentMonth = date.getMonth();
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + currentMonth + "/" + currentDay)).build();
-		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(App::parse).join();	
+		client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenApply(t -> {
+			try {
+				return App.parse(t);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return t;
+		}).join();	
 		return history;
 
 		
