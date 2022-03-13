@@ -16,16 +16,17 @@ public class implementingClass extends App implements TodaysHistoryRetriever {
 	
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
 
-	public static void main(String[] args) {
-		
-		implementingClass m = new implementingClass();
-		CustomDate d = new CustomDate();
-		d.setDay(12);
-		d.setMonth(3);
-		d.setYear(2022);
-		history = m.get(d);
-		System.out.println(history);
-	}
+	//Uncomment the following lines to check the module
+//	public static void main(String[] args) {
+//		
+//		implementingClass m = new implementingClass();
+//		CustomDate d = new CustomDate();		
+//		d.setDay(12);
+//		d.setMonth(3);
+//		d.setYear(2022);
+//		history = m.get(d);
+//		System.out.println(history);
+//	}
 
 	//Running the API Asynchronously
 	@Override
