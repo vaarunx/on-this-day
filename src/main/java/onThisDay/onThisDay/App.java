@@ -1,4 +1,4 @@
-package on_this_day.on_this_day;
+package onThisDay.onThisDay;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,7 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 //Encryption Class
 class AesEnc {
 	private static final String SECRET_KEY = "4B2E8521A6945CD0BE701C7697AB268DC74AE1A581E89C4D21EBD6BD3D575813";
-    private static final String SALT = "C056C8725AE0F2A1";
+    private static final String SALT = "C056C8725AE0F2A1"; 
     private static final byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     
     //Encrypting
@@ -42,7 +42,7 @@ class AesEnc {
         }
         return null;
     }
-    
+    //Decrypting
     public String decrypt(String strToDecrypt){
 	try {
             IvParameterSpec ivspec = new IvParameterSpec(iv);
@@ -67,11 +67,13 @@ public class App
 {
 	public static TodaysHistoryInfo history = new TodaysHistoryInfo();
 //	CustomDate date = new CustomDate();
-	public static CustomDate given_date = new CustomDate();
+	public static CustomDate givenDate = new CustomDate();
 	
-	//"Selected" is 
-	public static String parse(String responseBody) throws ParseException {
+	public TodaysHistoryInfo parse(String responseBody) throws ParseException {
 		JSONObject events = new JSONObject(responseBody);
+		//System.out.println(responseBody);
+		
+		//"Selected" are curated set of events that occurred on the given date
 		JSONArray selected = events.getJSONArray("selected");
 		for(int i = 0; i < selected.length(); i++) {
 			 JSONObject each_selected = selected.getJSONObject(i);
@@ -81,6 +83,8 @@ public class App
 			 Selected Conv_obj = gson.fromJson(jSONString, Selected.class);
 			 history.selected_array.add(i,Conv_obj);
 		}
+		
+		//'Events' are events that occurred on the given date that are not included in another type
 		JSONArray event = events.getJSONArray("events");
 		for(int i = 0; i < event.length(); i++) {
 			 JSONObject each_event = event.getJSONObject(i);
@@ -90,6 +94,7 @@ public class App
 			 Event Conv_obj = gson.fromJson(jSONString, Event.class);
 			 history.events_array.add(i,Conv_obj);
 		}
+		//'Holidays' are fixed holidays celebrated on the given date
 		JSONArray holiday = events.getJSONArray("holidays");
 		for(int i = 0; i < holiday.length(); i++) {
 			 JSONObject each_holiday = holiday.getJSONObject(i);
@@ -99,6 +104,8 @@ public class App
 			 Holiday Conv_obj = gson.fromJson(jSONString, Holiday.class);
 			 history.holidays_array.add(i,Conv_obj);
 		}
+		
+		//'Birth' are notable people born on the given date
 		JSONArray birth = events.getJSONArray("births");
 		for(int i = 0; i < birth.length(); i++) {
 			 JSONObject each_birth = birth.getJSONObject(i);
@@ -109,6 +116,7 @@ public class App
 			 history.births_array.add(i,Conv_obj);
 		}
 		
+		//'Deaths' are notable people who died on the given date
 		JSONArray deaths = events.getJSONArray("deaths");
 		for(int i = 0; i < deaths.length(); i++) {
 			 JSONObject each_death = deaths.getJSONObject(i);
@@ -118,20 +126,19 @@ public class App
 			 Death Conv_obj = gson.fromJson(jSONString, Death.class);
 			 history.deaths_array.add(i,Conv_obj);
 		}
-
-		String pattern = "yyyy-MM-dd";
-		String datestr = "";
-		datestr+=given_date.getYear();
-		datestr+="-";
-		datestr+=given_date.getMonth();
-		datestr+="-";
-		datestr+=given_date.getDay();
-		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-		Date date = sdf.parse(datestr);
-		long epoch = date.getTime();
-		System.out.println(datestr);
-		System.out.println(epoch);
 		
+		//Epoch conversion
+		String pattern = "yyyy-MM-dd";
+		String dateStr = "";
+		dateStr+=givenDate.getYear();
+		dateStr+="-";
+		dateStr+=givenDate.getMonth();
+		dateStr+="-";
+		dateStr+=givenDate.getDay();
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		Date date = sdf.parse(dateStr);
+		long epoch = date.getTime();
+
 		//Database creation
 		
 		try{
@@ -148,6 +155,7 @@ public class App
 			   PreparedStatement ps=conn.prepareStatement(sql);
 			   ps.setLong(1, epoch);
 			   ps.setString(2, new AesEnc().encrypt(events.toString()));
+			   //ps.setString(2, events.toString());
 			   ps.executeUpdate();
 			   conn.close();
 		}
@@ -164,10 +172,11 @@ public class App
 		         conn.close();
 	        }
 		}
-		catch(Exception ex){
-		   System.out.print(ex.getMessage());
+		catch(Exception e){
+		   System.out.print(e.getMessage());
 		}
-		return null;
+		
+		return history;
 	}
 }
 	
